@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Validation</title>
+    <style>
+        @font-face {
+            font-family: 'Proxima Nova';
+            src: url('https://fonts.googleapis.com/css2?family=Proxima+Nova:wght@400;700&display=swap');
+        }
+
+        body {
+            font-family: 'Proxima Nova', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .certificate-form {
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .certificate-info {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        h2, p, a {
+            font-family: 'Proxima Nova', Arial, sans-serif;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="logo.png" alt="Company Logo" width="250">
+        </div><br>
+        <div class="certificate-form">
+            <form id="certificateForm">
+                <label for="certificateCode">Enter Certificate Code:</label><br><br>
+                <input type="text" id="certificateCode" name="certificateCode"><br>
+                <input type="submit" value="Validate">
+            </form>
+        </div>
+        <div class="certificate-info" id="certificateInfo" style="display: none;">
+            <h3>Certificate Information:</h3>
+            <p id="candidateName"></p>
+            <p id="duration"></p>
+            <p id="projectName"></p>
+            <a id="viewCertificate" href="#" target="_blank">View Certificate</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("certificateForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var certificateCode = document.getElementById("certificateCode").value;
+            // Load certificate data from CSV file
+            fetch('certificates.csv')
+                .then(response => response.text())
+                .then(text => {
+                    var certificates = parseCSV(text);
+                    var matchedCertificate = certificates.find(certificate => certificate['Certificate Code'] === certificateCode);
+                    if (matchedCertificate) {
+                        displayCertificateInfo(matchedCertificate);
+                    } else {
+                        alert("Invalid certificate code. Please try again.");
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        function parseCSV(csv) {
+            var lines = csv.split('\n');
+            var result = [];
+            var headers = lines[0].split(',');
+            for (var i = 1; i < lines.length; i++) {
+                var obj = {};
+                var currentLine = lines[i].split(',');
+                for (var j = 0; j < headers.length; j++) {
+                    obj[headers[j].trim()] = currentLine[j].trim();
+                }
+                result.push(obj);
+            }
+            return result;
+        }
+
+        function displayCertificateInfo(certificate) {
+            document.getElementById("candidateName").textContent = "Name: " + certificate.Name;
+            document.getElementById("duration").textContent = "Duration: " + certificate.Duration;
+            document.getElementById("projectName").textContent = "Project Name: " + certificate["Project Name"];
+            document.getElementById("viewCertificate").href = certificate["Certificate Link"];
+            document.getElementById("certificateInfo").style.display = "block";
+        }
+    </script>
+</body>
+</html>
